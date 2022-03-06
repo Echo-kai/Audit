@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Audit/client"
 	"encoding/json"
 	"fmt"
 	"github.com/alicebob/miniredis/v2" //nolint:typecheck
@@ -18,7 +19,7 @@ func TestSubmit(t *testing.T) {
 	}
 	mini := miniredis.RunT(t) //nolint:typecheck
 	defer mini.Close()
-	redisClient = redis.NewClient(&redis.Options{Addr: mini.Addr()})
+	client.RedisClient = redis.NewClient(&redis.Options{Addr: mini.Addr()})
 	for _, test := range tests {
 		gin.SetMode(gin.TestMode)
 		c, _ := gin.CreateTestContext(httptest.NewRecorder())
@@ -41,4 +42,9 @@ func TestSubmit(t *testing.T) {
 			fmt.Println(res)
 		}
 	}
+}
+
+func Test_Demo(t *testing.T){
+	s := "赞"
+	fmt.Println(len(s))
 }

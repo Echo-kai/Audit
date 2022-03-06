@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Audit/client"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -29,7 +30,7 @@ func Submit(c *gin.Context) {
 			log.Printf("marshal faild.err:%v", err)
 			return
 		}
-		redisClient.SetNX(prefix+form.Identifier, data, 0)
+		client.RedisClient.SetNX(prefix+form.Identifier, data, 0)
 		c.String(http.StatusOK, "submit success")
 		return
 	}
