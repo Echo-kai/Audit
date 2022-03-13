@@ -4,6 +4,7 @@ import (
 	"Audit/client"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go/v7"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -19,23 +20,40 @@ type AudioForm struct {
 	UploadFile *multipart.FileHeader
 }
 
-const prefix = "audio::form::"
+const prefix = "audit::form::"
 
 func Submit(c *gin.Context) {
 	form := buildRequest(c)
 	checkParams(form)
 	if form.IsUpload == "true" {
-		data, err := json.Marshal(form)
-		if err != nil {
-			log.Printf("marshal faild.err:%v", err)
-			return
-		}
-		client.RedisClient.SetNX(prefix+form.Identifier, data, 0)
+		meta := make(map[string]string)
+		meta["bucket_name"] = form.BucketName
+		meta["object_name"] = form.ObjectName
+		metaJson, _ := json.Marshal(meta)
+		client.RedisClient.SetNX(prefix+form.Identifier, metaJson, 0)
 		c.String(http.StatusOK, "submit success")
 		return
 	}
-	// todo:前段上传失败时上传MinIO
-
+	// 前段上传失败时上传MinIO
+	file, err := form.UploadFile.Open()
+	if err != nil {
+		log.Printf("OPen File failed.err:%v\n", err)
+		c.String(http.StatusOK, "Internal Error.")
+		return
+	}
+	opts := minio.PutObjectOptions{ContentType: form.UploadFile.Header.Get("ContentType")}
+	info, err := client.MinioClient.PutObject(c, client.BucketName, form.UploadFile.Filename+"_"+form.Name, file, form.UploadFile.Size, opts)
+	if err != nil {
+		log.Printf("Upload file failed.err:%v", err)
+		c.String(http.StatusOK, "Internal Error.")
+		return
+	}
+	meta := make(map[string]string)
+	meta["bucket_name"] = info.Bucket
+	meta["object_name"] = info.Key
+	metaJson, _ := json.Marshal(meta)
+	c.String(http.StatusOK, "submit success")
+	client.RedisClient.SetNX(prefix+form.Identifier, metaJson, 0)
 }
 
 func checkParams(form AudioForm) {
