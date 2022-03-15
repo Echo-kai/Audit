@@ -41,8 +41,8 @@ func Submit(c *gin.Context) {
 		c.String(http.StatusOK, "Internal Error.")
 		return
 	}
-	opts := minio.PutObjectOptions{ContentType: form.UploadFile.Header.Get("ContentType")}
-	info, err := client.MinioClient.PutObject(c, client.BucketName, form.UploadFile.Filename+"_"+form.Name, file, form.UploadFile.Size, opts)
+	opts := minio.PutObjectOptions{ContentType: form.UploadFile.Header.Get("Content-Type")}
+	info, err := client.MinioClient.PutObject(c, client.BucketName, form.Identifier+"_"+form.UploadFile.Filename, file, form.UploadFile.Size, opts)
 	if err != nil {
 		log.Printf("Upload file failed.err:%v", err)
 		c.String(http.StatusOK, "Internal Error.")

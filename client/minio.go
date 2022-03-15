@@ -16,7 +16,8 @@ func InitMinIo() {
 	// 初使化 minio client对象。
 	opt := &minio.Options{}
 	opt.Creds = credentials.New(MinioProvider{})
-	MinioClient, err := minio.New(endpoint, opt)
+	var err error
+	MinioClient, err = minio.New(endpoint, opt)
 	if err != nil {
 		log.Fatalln(err)
 	}
