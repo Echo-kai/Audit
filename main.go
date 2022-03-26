@@ -12,10 +12,10 @@ func main() {
 	r := gin.Default()
 	p := ginprom.New(
 		ginprom.Engine(r),
-		ginprom.Subsystem("audio"),
+		ginprom.Subsystem("audit"),
 		ginprom.Path("metrics"))
 	r.Use(p.Instrument())
-	r.POST("/audio/submit", Submit)
+	r.POST("/audit/submit/:id", Submit)
 	err := r.Run()
 	if err != nil {
 		panic(err)
