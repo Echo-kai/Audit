@@ -9,7 +9,7 @@ import (
 )
 
 func Test_MinIOInit(t *testing.T) {
-	endpoint := "192.168.1.15:9000"
+	endpoint := "localhost:9000"
 
 	// 初使化 minio client对象。
 	opt := &minio.Options{}
@@ -39,8 +39,8 @@ func Test_MinIOInit(t *testing.T) {
 	log.Printf("Successfully created %s\n", bucketName)
 
 	// 上传一个zip文件。
-	objectName := "minio.go"
-	filePath := "minio.go"
+	objectName := "redis.go"
+	filePath := "redis.go"
 	contentType := "application/file"
 
 	// 使用FPutObject上传一个zip文件。

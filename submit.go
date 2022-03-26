@@ -26,16 +26,14 @@ func Submit(c *gin.Context) {
 	form := buildRequest(c)
 	checkParams(form)
 	if form.IsUpload == "true" {
-		meta := make(map[string]string)
-		meta["bucket_name"] = form.BucketName
-		meta["object_name"] = form.ObjectName
-		metaJson, _ := json.Marshal(meta)
-		client.RedisClient.SetNX(prefix+form.Identifier, metaJson, 0)
+		json, _ := json.Marshal(form)
+		client.RedisClient.SetNX(prefix+form.Identifier, json, 0)
 		c.String(http.StatusOK, "submit success")
 		return
 	}
 	// 前段上传失败时上传MinIO
 	file, err := form.UploadFile.Open()
+	defer file.Close()
 	if err != nil {
 		log.Printf("OPen File failed.err:%v\n", err)
 		c.String(http.StatusOK, "Internal Error.")
@@ -48,12 +46,11 @@ func Submit(c *gin.Context) {
 		c.String(http.StatusOK, "Internal Error.")
 		return
 	}
-	meta := make(map[string]string)
-	meta["bucket_name"] = info.Bucket
-	meta["object_name"] = info.Key
-	metaJson, _ := json.Marshal(meta)
+	form.BucketName = info.Bucket
+	form.ObjectName = info.Key
+	json, _ := json.Marshal(form)
 	c.String(http.StatusOK, "submit success")
-	client.RedisClient.SetNX(prefix+form.Identifier, metaJson, 0)
+	client.RedisClient.SetNX(prefix+form.Identifier, json, 0)
 }
 
 func checkParams(form AudioForm) {
